@@ -65,6 +65,12 @@ npm test
 node dist/src/index.js
 ```
 
+После публикации в npm можно использовать пакет без клонирования:
+
+```bash
+npx --yes qwen-sber-doc-mcp
+```
+
 ## Подключение к Qwen CLI
 
 В `.qwen/settings.json`:
