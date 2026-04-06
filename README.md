@@ -8,6 +8,7 @@ MCP server для Qwen CLI, который автоматизирует анал
 2. Репозиторий extension: [https://github.com/travinov/qwen-sber-doc-extension](https://github.com/travinov/qwen-sber-doc-extension)
 3. Форк с документированным модулем: [https://github.com/travinov/claw-code](https://github.com/travinov/claw-code)
 4. Релиз MCP `v0.1.0`: [https://github.com/travinov/qwen-sber-doc-mcp/releases/tag/v0.1.0](https://github.com/travinov/qwen-sber-doc-mcp/releases/tag/v0.1.0)
+5. npm-пакет: [https://www.npmjs.com/package/qwen-sber-doc-mcp](https://www.npmjs.com/package/qwen-sber-doc-mcp)
 
 ## Зачем это нужно
 
