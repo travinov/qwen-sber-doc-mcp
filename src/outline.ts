@@ -28,6 +28,27 @@ function asRecord(value: unknown): Record<string, unknown> | null {
   return value as Record<string, unknown>;
 }
 
+function coerceJsonInput(value: unknown): unknown {
+  if (typeof value !== "string") {
+    return value;
+  }
+
+  const trimmed = value.trim();
+  if (trimmed.length === 0) {
+    return value;
+  }
+
+  if (!(trimmed.startsWith("{") || trimmed.startsWith("["))) {
+    return value;
+  }
+
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    return value;
+  }
+}
+
 function toNumber(value: unknown, fallback: number): number {
   return typeof value === "number" && Number.isFinite(value) ? value : fallback;
 }
@@ -50,7 +71,8 @@ function summarizeModule(moduleItem: PythonModuleAnalysis): PythonProjectModuleS
 }
 
 function normalizeModuleAnalysis(input: unknown): PythonModuleAnalysis {
-  const direct = asRecord(input);
+  const parsedInput = coerceJsonInput(input);
+  const direct = asRecord(parsedInput);
   const wrapped = direct ? asRecord(direct.module) : null;
   const candidate = wrapped ?? direct;
 
@@ -75,7 +97,8 @@ function normalizeModuleAnalysis(input: unknown): PythonModuleAnalysis {
 }
 
 function normalizeProjectAnalysis(input: unknown): PythonProjectAnalysis {
-  const direct = asRecord(input);
+  const parsedInput = coerceJsonInput(input);
+  const direct = asRecord(parsedInput);
   const wrapped = direct ? asRecord(direct.project) : null;
   const candidate = wrapped ?? direct;
 

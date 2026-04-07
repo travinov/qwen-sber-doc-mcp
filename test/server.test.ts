@@ -97,6 +97,18 @@ test("build_sber_project_outline accepts wrapped analyze_python_target payload",
   assert.ok(outline.sections.some((section) => section.title === "Основные сущности"));
 });
 
+test("build_sber_project_outline accepts JSON string payload", () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "gigadoc-outline-string-"));
+  fs.writeFileSync(path.join(tempDir, "main.py"), "def entrypoint():\n    return 'ok'\n");
+
+  const analysis = analyzePythonTarget(tempDir);
+  assert.equal(analysis.kind, "project");
+
+  const outline = buildSberProjectOutline("string_project", JSON.stringify(analysis));
+  assert.equal(outline.moduleName, "string_project");
+  assert.ok(outline.sections.some((section) => section.title === "Публичные точки входа"));
+});
+
 test("build_sber_doc_outline accepts wrapped module payload", () => {
   const analysis = analyzePythonTarget(queryEnginePath);
   assert.equal(analysis.kind, "module");
@@ -104,6 +116,15 @@ test("build_sber_doc_outline accepts wrapped module payload", () => {
   const outline = buildSberDocOutline("query_engine_wrapped", analysis);
   assert.equal(outline.moduleName, "query_engine_wrapped");
   assert.ok(outline.sections.some((section) => section.title === "Публичные методы и функции"));
+});
+
+test("build_sber_doc_outline accepts JSON string payload", () => {
+  const analysis = analyzePythonTarget(queryEnginePath);
+  assert.equal(analysis.kind, "module");
+
+  const outline = buildSberDocOutline("query_engine_string", JSON.stringify(analysis));
+  assert.equal(outline.moduleName, "query_engine_string");
+  assert.ok(outline.sections.some((section) => section.title === "Основные сущности"));
 });
 
 test("validate_sber_doc reports structural problems", () => {
