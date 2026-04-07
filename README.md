@@ -1,6 +1,6 @@
-# Qwen Sber Doc MCP
+# Sber Doc MCP (Gigacode/Gemini + Qwen)
 
-MCP server для Qwen CLI, который автоматизирует анализ Python-кода и контроль качества документации.
+MCP server для Gigacode/Gemini/Qwen CLI, который автоматизирует анализ Python-кода и контроль качества документации.
 Поддерживает как отдельные `.py` файлы, так и директории проекта.
 
 ## Публичные ссылки
@@ -8,7 +8,7 @@ MCP server для Qwen CLI, который автоматизирует анал
 1. Репозиторий MCP server: [https://github.com/travinov/qwen-sber-doc-mcp](https://github.com/travinov/qwen-sber-doc-mcp)
 2. Репозиторий extension: [https://github.com/travinov/qwen-sber-doc-extension](https://github.com/travinov/qwen-sber-doc-extension)
 3. Форк с документированным модулем: [https://github.com/travinov/claw-code](https://github.com/travinov/claw-code)
-4. Релиз MCP `v0.2.0`: [https://github.com/travinov/qwen-sber-doc-mcp/releases/tag/v0.2.0](https://github.com/travinov/qwen-sber-doc-mcp/releases/tag/v0.2.0)
+4. Релиз MCP `v0.3.0`: [https://github.com/travinov/qwen-sber-doc-mcp/releases/tag/v0.3.0](https://github.com/travinov/qwen-sber-doc-mcp/releases/tag/v0.3.0)
 5. npm-пакет: [https://www.npmjs.com/package/qwen-sber-doc-mcp](https://www.npmjs.com/package/qwen-sber-doc-mcp)
 
 ## Зачем это нужно
@@ -83,9 +83,9 @@ node dist/src/index.js
 npx --yes qwen-sber-doc-mcp
 ```
 
-## Подключение к Qwen CLI
+## Подключение к CLI (Gigacode/Gemini/Qwen)
 
-В `.qwen/settings.json`:
+В конфиге клиента (`~/.gigacode/settings.json`, `~/.qwen/settings.json` или аналог):
 
 ```json
 {

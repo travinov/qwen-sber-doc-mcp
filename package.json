@@ -1,6 +1,6 @@
 {
   "name": "qwen-sber-doc-mcp",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "MCP server for Sber-style Python module documentation in Qwen CLI.",
   "type": "module",
   "main": "dist/src/index.js",
