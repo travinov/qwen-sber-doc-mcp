@@ -3,6 +3,7 @@ import type {
   PythonClass,
   PythonFunction,
   PythonModuleAnalysis,
+  PythonProjectModuleSummary,
   PythonProjectAnalysis,
   SberDocOutline,
 } from "./types.js";
@@ -20,10 +21,104 @@ function describeClass(item: PythonClass): string {
   return `\`${item.name}\`: публичные методы ${publicMethods.map((method) => `\`${method.name}\``).join(", ")}.`;
 }
 
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+  return value as Record<string, unknown>;
+}
+
+function toNumber(value: unknown, fallback: number): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
+function summarizeModule(moduleItem: PythonModuleAnalysis): PythonProjectModuleSummary {
+  const publicFunctionCount =
+    moduleItem.functions.filter((item) => item.visibility === "public").length +
+    moduleItem.classes.reduce(
+      (count, classItem) =>
+        count + classItem.methods.filter((method) => method.visibility === "public").length,
+      0
+    );
+
+  return {
+    moduleName: moduleItem.moduleName,
+    path: moduleItem.path,
+    publicClassCount: moduleItem.classes.length,
+    publicFunctionCount,
+  };
+}
+
+function normalizeModuleAnalysis(input: unknown): PythonModuleAnalysis {
+  const direct = asRecord(input);
+  const wrapped = direct ? asRecord(direct.module) : null;
+  const candidate = wrapped ?? direct;
+
+  if (!candidate) {
+    throw new Error("Invalid module analysis payload: expected object.");
+  }
+
+  const classes = Array.isArray(candidate.classes) ? (candidate.classes as PythonModuleAnalysis["classes"]) : [];
+  const functions = Array.isArray(candidate.functions)
+    ? (candidate.functions as PythonModuleAnalysis["functions"])
+    : [];
+  const imports = Array.isArray(candidate.imports) ? (candidate.imports as string[]) : [];
+
+  return {
+    path: typeof candidate.path === "string" ? candidate.path : "",
+    moduleName: typeof candidate.moduleName === "string" ? candidate.moduleName : "module",
+    docstring: typeof candidate.docstring === "string" ? candidate.docstring : null,
+    imports,
+    classes,
+    functions,
+  };
+}
+
+function normalizeProjectAnalysis(input: unknown): PythonProjectAnalysis {
+  const direct = asRecord(input);
+  const wrapped = direct ? asRecord(direct.project) : null;
+  const candidate = wrapped ?? direct;
+
+  if (!candidate) {
+    throw new Error("Invalid project analysis payload: expected object.");
+  }
+
+  const modules = Array.isArray(candidate.modules) ? (candidate.modules as PythonModuleAnalysis[]) : [];
+
+  let moduleSummaries: PythonProjectModuleSummary[];
+  if (Array.isArray(candidate.moduleSummaries)) {
+    moduleSummaries = candidate.moduleSummaries as PythonProjectModuleSummary[];
+  } else if (Array.isArray(candidate.module_summaries)) {
+    moduleSummaries = candidate.module_summaries as PythonProjectModuleSummary[];
+  } else {
+    moduleSummaries = modules.map(summarizeModule);
+  }
+
+  const totalClassesFromModules = modules.reduce((count, item) => count + item.classes.length, 0);
+  const totalFunctionsFromModules = modules.reduce((count, item) => count + item.functions.length, 0);
+  const totalPublicFunctionsFromSummaries = moduleSummaries.reduce(
+    (count, item) => count + item.publicFunctionCount,
+    0
+  );
+
+  return {
+    targetPath: typeof candidate.targetPath === "string" ? candidate.targetPath : "",
+    projectName: typeof candidate.projectName === "string" ? candidate.projectName : "project",
+    moduleCount: toNumber(candidate.moduleCount, modules.length),
+    totalClasses: toNumber(candidate.totalClasses, totalClassesFromModules),
+    totalFunctions: toNumber(candidate.totalFunctions, totalFunctionsFromModules),
+    totalPublicFunctions: toNumber(candidate.totalPublicFunctions, totalPublicFunctionsFromSummaries),
+    modules,
+    moduleSummaries,
+  };
+}
+
 export function buildSberDocOutline(
   moduleName: string,
-  analysis: PythonModuleAnalysis
+  analysisInput: PythonModuleAnalysis | unknown
 ): SberDocOutline {
+  const analysis = normalizeModuleAnalysis(analysisInput);
+
   const entityBullets = [
     ...analysis.classes.map(describeClass),
     ...analysis.functions.filter((item) => item.visibility === "public").map(describeFunction),
@@ -87,8 +182,10 @@ export function buildSberDocOutline(
 
 export function buildSberProjectOutline(
   projectName: string,
-  analysis: PythonProjectAnalysis
+  analysisInput: PythonProjectAnalysis | unknown
 ): SberDocOutline {
+  const analysis = normalizeProjectAnalysis(analysisInput);
+
   const topModules = [...analysis.moduleSummaries]
     .sort((a, b) => b.publicFunctionCount - a.publicFunctionCount)
     .slice(0, 10);

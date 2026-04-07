@@ -70,6 +70,27 @@ test("build_sber_project_outline returns project sections", () => {
   assert.ok(outline.sections.some((section) => section.title === "Публичные точки входа"));
 });
 
+test("build_sber_project_outline accepts wrapped analyze_python_target payload", () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "gigadoc-outline-wrapped-"));
+  fs.writeFileSync(path.join(tempDir, "main.py"), "def entrypoint():\n    return 'ok'\n");
+
+  const analysis = analyzePythonTarget(tempDir);
+  assert.equal(analysis.kind, "project");
+
+  const outline = buildSberProjectOutline("wrapped_project", analysis);
+  assert.equal(outline.moduleName, "wrapped_project");
+  assert.ok(outline.sections.some((section) => section.title === "Основные сущности"));
+});
+
+test("build_sber_doc_outline accepts wrapped module payload", () => {
+  const analysis = analyzePythonTarget(queryEnginePath);
+  assert.equal(analysis.kind, "module");
+
+  const outline = buildSberDocOutline("query_engine_wrapped", analysis);
+  assert.equal(outline.moduleName, "query_engine_wrapped");
+  assert.ok(outline.sections.some((section) => section.title === "Публичные методы и функции"));
+});
+
 test("validate_sber_doc reports structural problems", () => {
   const invalid = validateSberDoc("# Черновик\n\nТекст без структуры");
   assert.equal(invalid.ok, false);
